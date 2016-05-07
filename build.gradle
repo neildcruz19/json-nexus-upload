@@ -1,0 +1,50 @@
+apply plugin: 'java'
+
+task packageJSON {
+
+	def i = 0
+
+	println '\n===== Begin - packaging JSON configuration =====\n\n'
+
+	//Get the folder name from the command line parameters
+	println 'Folder : ' + folder
+
+	//Read the release file contents from the folder
+	String fileContents = new File(folder + '/release.txt').text
+	println '-- Release File Content --\n' + fileContents
+
+
+	//Copy files to temporary build folder to work on the files
+	println '\n-- Moving files to build folder --'
+	def jobnames = fileContents.split('\n')
+
+	if(jobnames != null && jobnames.length != 0) {
+		if(jobnames[0].equals('')) {
+			println '\n No job configurations to package in release!'
+		} else {
+			println 'Number of jobs : ' + jobnames.length
+
+			jobnames.each {
+				job ->
+				def filename = folder + '/' + job + '.json'
+				println '\nProcessing file : ' + filename
+
+				//Copy to build/package folder
+				copy {
+					from  filename
+					into 'build/package'
+				}
+			}
+		}
+	} else {
+		println '\n No job configurations to package in release!'
+	}
+
+	println '\n\n===== End - packaging JSON configuration ====='
+}
+
+task zip(type: Zip, dependsOn : 'packageJSON') {
+	from 'build/package'
+    destinationDir file('./build')
+    archiveName  'json-archive.zip'
+}
