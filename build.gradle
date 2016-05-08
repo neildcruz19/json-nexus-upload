@@ -1,13 +1,23 @@
 apply plugin: 'java'
+apply plugin: 'base'
 
-task packageJSON {
+
+task packageJSON (dependsOn : 'clean') << {
 
 	def i = 0
 
 	println '\n===== Begin - packaging JSON configuration =====\n\n'
 
+	if(folder == null) {
+		throw new Exception('Please pass folder name as argument. e.g. -Pfolder={folder name}')
+	}
+
 	//Get the folder name from the command line parameters
 	println 'Folder : ' + folder
+
+	if(!file(folder).exists()) {
+		throw new Exception('Folder : ' + folder + ' does not exist. Please check the name and try again')
+	}
 
 	//Read the release file contents from the folder
 	String fileContents = new File(folder + '/release.txt').text
