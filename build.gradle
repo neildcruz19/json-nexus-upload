@@ -1,8 +1,12 @@
-apply plugin: 'java'
-apply plugin: 'base'
+apply plugin: 'maven'
+
+group='com.example.json'
+version='1.0'
 
 
-task packageJSON (dependsOn : 'clean') << {
+task packagejson (dependsOn : 'clean') << {
+
+	description 'Read the release.txt file and package the json files in the build/package directory'
 
 	def i = 0
 
@@ -52,9 +56,29 @@ task packageJSON (dependsOn : 'clean') << {
 
 	println '\n\n===== End - packaging JSON configuration ====='
 }
-
-task zip(type: Zip, dependsOn : 'packageJSON') {
+	
+task zipjsonconfig(type: Zip, dependsOn : 'packagejson') {
+	println "Test Param : ${testparam}"
+	println 'Build Number :' + build_number
 	from 'build/package'
-    destinationDir file('./build')
-    archiveName  'json-archive.zip'
+    destinationDir file('./build/libs')
+    archiveName  "json-metadata-${version}.${build_number}.zip"
+}
+
+artifacts {
+	archives zipjsonconfig
+}
+
+
+uploadArchives {
+    repositories {
+       mavenDeployer {
+            repository(url: "http://localhost:8081/nexus/repository/json-repo") {
+            	 authentication(userName: "admin", password: "admin123")
+			}
+			pom.version = project.version + "." +build_number
+       		pom.artifactId = "json-metadata"
+       		pom.groupId = "com.json.nexus"
+       }
+    }
 }
